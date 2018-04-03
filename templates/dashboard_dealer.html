@@ -72,13 +72,61 @@ Dashboard
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
+<h2 style="text-align: center;padding-top: 3%;">Orders</h2>
 <div class="container"  style="padding-top: 5%;">
-  <div class="row">
-  <div class="col-lg-3 col-md-3"></div>
-  <div class="col-lg-6 col-md-6">
+    {% for order in orders %}
+      <div class="jumbotron">
 
-  </div>
-  <div class="col-lg-3 col-md-3"></div>
+        <div class="row">
+          <div class="col-lg-6" style="border-right:  0.5px solid black;">
+            {% for product in products %}
+                {% if product[0].id == order.product_id %}
+                  {% set each_cost = product[0].cost_each | int %}
+                  {% set quantity = order.quantity | int %}
+                  {% set total = each_cost*quantity %}
+
+                  <h2><b>Order #</b> {{ order.id }}</h2>
+                  <hr>
+                  <h3><b>{{ product[0].description }}</b> - <span style="font-size: 26px;">$&nbsp;{{ product[0].cost_each }}</span></h3>
+                  <br>
+                  <h3><b>Quantity</b> :&nbsp;{{ order.quantity }}</h3>
+                  <br>
+                  <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
+                  <hr>
+                  <a href="/delivered/{{order.id}}" class="btn btn-default">DELIVERED</a>
+                  {% break %}
+
+
+               {% endif %}
+            {% endfor %}
+          </div>
+          <div class="col-lg-6">
+            <div style="padding-left: 1em;">
+              <h3><b>Ordered By : </b></h3>
+              <br>
+              {% for client in clients %}
+                {% if client[0].id == order.client_id %}
+                  <h3><b>Name </b> : &nbsp; {{ client[0].username }}</h3>
+                  <br>
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+              {% for client_data in clients_data %}
+                {% if order.client_id == client_data[0].client_id %}
+                  <h4><b>Address </b> : &nbsp;{{ client_data[0].address }}</h4>
+                  <h4><b>City </b> : &nbsp;{{ client_data[0].city }}</h4>
+                  <h4><b>State </b> : &nbsp;{{ client_data[0].state }}</h4>
+                  <h4><b>Pincode </b> : &nbsp;{{ client_data[0].pincode }}</h4>
+                  <hr>
+                  <h4><b>Contact </b> : &nbsp;{{ client_data[0].contact }}</h4>
+                  {% break %}
+                {% endif %}
+              {% endfor %}
+            </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

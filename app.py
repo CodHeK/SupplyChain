@@ -321,16 +321,18 @@ def dashboard_dealer():
     if 'username' in session:
         session_username = session['username']
         session_username = session_username[0].upper() + session_username[1:]
-        orders = Order.query.filter_by(dealer_id=session['id'])
-        # products = {}
-        # clients = {}
-        # for order in orders:
-        #     product = Products.query.filter_by(id=order.product_id)
-        #     products[order.product_id] = product
-        #     client = ClientDetails.query.filter_by(client_id=order.client_id)
-        #     clients[order.client_id] = client
-            # return orders[order]
-        return render_template('dashboard_dealer.html',session_username=session_username, orders=orders)
+        orders = Order.query.filter_by(dealer_id=session['id']).order_by(desc(Order.id))
+        products = []
+        clients_data = []
+        clients = []
+        for order in orders:
+            each_product = Products.query.filter_by(id=order.product_id)
+            each_client_data = ClientDetails.query.filter_by(client_id=order.client_id)
+            each_client = User.query.filter_by(id=order.client_id)
+            products.append(each_product)
+            clients_data.append(each_client_data)
+            clients.append(each_client)
+        return render_template('dashboard_dealer.html',session_username=session_username, orders=orders, products=products, clients_data=clients_data, clients=clients)
     else:
         session_type = session['type']
         return render_template('not_logged_in.html',session_type=session_type)

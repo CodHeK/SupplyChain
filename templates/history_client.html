@@ -78,14 +78,19 @@ Dashboard
     {% for products in list_of_products %}
 
           {% if products[0].id == orders.product_id %}
-            <h3><b>{{ products[0].description }}</b></h3>
-            <h5><b>Price</b> : $&nbsp;{{ products[0].cost_each }}</h5>
+            {% set each_cost = products[0].cost_each | int %}
+            {% set quantity = orders.quantity | int %}
+            {% set total = each_cost*quantity %}
+            <h2><b>Order #</b> {{ orders.id }}</h2>
             <hr>
+            <h4><b>{{ products[0].description }}</b> - <span style="font-size: 26px;">$&nbsp;{{ products[0].cost_each }}</span></h4>
+            <h4><b>Quantity</b> :&nbsp;{{ orders.quantity }}</h4>
+            <br>
+            <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
             {% break %}
         {% endif %}
 
     {% endfor %}
-    <h5><b>Quantity</b> :&nbsp;{{ orders.quantity }} on <b>Order #</b> {{ orders.id }}</h5>
   </div>
   <br>
   {% endfor %}
