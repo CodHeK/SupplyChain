@@ -1,0 +1,31 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+<link rel="stylesheet" href="{{url_for('.static', filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
+<srcipt src="{{url_for('.static', filename='bootstrap.min.js')}}">
+{% endblock %}
+
+{% block content %}
+<div class="container"  style="padding-top: 5%;">
+
+    <h2>You're not logged in! To continue, try logging in first!</h2>
+    {% if session_type == 'client' %}
+      <h3><a href="/login/client">LOGIN</a>
+    {% elif session_type == 'dealer' %}
+      <h3><a href="/login/dealer">LOGIN</a>
+    {% elif session_type == 'admin' %}
+      <h3><a href="/login/admin">LOGIN</a>
+    {% endif %}
+  </div>
+
+  </div>
+</div>
+{% endblock %}

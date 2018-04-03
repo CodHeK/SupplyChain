@@ -1,0 +1,118 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+<link rel="stylesheet" href="{{url_for('.static', filename='bootstrap.min.css')}}">
+<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
+<srcipt src="{{url_for('.static', filename='bootstrap.min.js')}}">
+<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Brand</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="/change_password/client">Change Password</a></li>
+          </ul>
+        </li>
+      </ul>
+      <!-- <form class="navbar-form navbar-left">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form> -->
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><b>{{ session_username }}</b> <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Settings</a></li>
+            <li><a href="/profile">Edit profile</a></li>
+            <li><a href="/history">My Orders</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="/logout">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<h2 style="text-align: center;padding-top: 3%;">Shop</h2>
+<div class="container"  style="padding-top: 5%;">
+  <div class="row">
+  <div class="col-lg-1 col-md-1"></div>
+    <div class="col-lg-10 col-md-10">
+      <div class="row">
+          <div class="col-lg-10 col-md-10">
+            <form method="POST" action="/dashboard/client">
+              {{ form.hidden_tag() }}
+              {{ wtf.form_field(form.search) }}
+            <form>
+          </div>
+          <div class="col-lg-2 col-md-2" style="padding-top: 2.5%;">
+
+              <a href="/dashboard/client" class="btn btn-default">All products</a>
+
+          </div>
+      </div>
+      <br>
+      {% if message == '1' %}
+        {% for product in products %}
+        <div class="jumbotron">
+          <h2>{{ product.description }}</h2>
+          {% set quantity = product.quantity_avail | int %}
+          {% if quantity < 3 %}
+            <h5>Only <b>{{ quantity }}</b> in Stock!</h5>
+          {% else %}
+            <h5>In Stock</h5>
+          {% endif %}
+          <h5><b>Price</b> : $&nbsp;{{ product.cost_each }}</h5>
+          <hr>
+          <a href="order/{{product.id}}" class="btn btn-default">ORDER</a>
+        </div>
+        <br>
+        {% endfor %}
+      {% elif message == '0' %}
+        <div class="jumbotron">
+          <h2>No such product found :(</h2>
+        </div>
+      {% endif %}
+    </div>
+    <div class="col-lg-1 col-md-1"></div>
+  </div>
+</div>
+{% endblock %}
