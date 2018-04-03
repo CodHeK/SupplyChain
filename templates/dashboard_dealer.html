@@ -76,7 +76,6 @@ Dashboard
 <div class="container"  style="padding-top: 5%;">
     {% for order in orders %}
       <div class="jumbotron">
-
         <div class="row">
           <div class="col-lg-6" style="border-right:  0.5px solid black;">
             {% for product in products %}
@@ -84,7 +83,6 @@ Dashboard
                   {% set each_cost = product[0].cost_each | int %}
                   {% set quantity = order.quantity | int %}
                   {% set total = each_cost*quantity %}
-
                   <h2><b>Order #</b> {{ order.id }}</h2>
                   <hr>
                   <h3><b>{{ product[0].description }}</b> - <span style="font-size: 26px;">$&nbsp;{{ product[0].cost_each }}</span></h3>
@@ -93,10 +91,8 @@ Dashboard
                   <br>
                   <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
                   <hr>
-                  <a href="/delivered/{{order.id}}" class="btn btn-default">DELIVERED</a>
+                  <a href="/dashboard/delivered/{{order.id}}" class="btn btn-default">DELIVERED</a>
                   {% break %}
-
-
                {% endif %}
             {% endfor %}
           </div>

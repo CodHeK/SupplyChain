@@ -547,7 +547,6 @@ def confirmed_order(product_id):
                 product.quantity_avail = str(new_quantity)
                 db.session.commit()
                 order_id = new_order.id
-                #if int(product.quantity_avail) < int(product.min_quantity):
                 message = "Order placed Successfully!"
                 return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], order_id=order_id)
             else:
@@ -567,13 +566,18 @@ def confirmed_order(product_id):
             return render_template('profile.html',form=profileForm, session_username=session['username'], transaction=transaction)
     return render_template('product.html', form=form, product=product, session_username=session['username'])
 
+@app.route('/dashboard/delivered/<int:order_id>', methods=['GET', 'POST'])
+def delivered(order_id):
+    remove_order = Order.query.filter_by(id=order_id).delete()
+    db.session.commit()
+    return redirect(url_for('dashboard_dealer'))
 
-@app.route('/dashboard/notifications')
+@app.route('/dashboard/notifications', methods=['GET', 'POST'])
 def notifications():
     products = Products.query.filter_by(dealer_id=session['id'])
     return render_template('notifications_dealer.html', products=products, session_username=session['username'])
 
-@app.route('/history')
+@app.route('/history', methods=['GET', 'POST'])
 def history():
     my_orders = Order.query.filter_by(client_id=session['id'])
     list_of_products = []
@@ -626,4 +630,4 @@ def logout():
 if __name__ == '__main__':
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=4500, debug=True)
