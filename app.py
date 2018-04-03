@@ -16,7 +16,8 @@ app = Flask(__name__)
 app.config.from_pyfile('config.cfg')
 app.config['SECRET_KEY'] = "thisisasecretkey"
 app.secret_key = "yolosecretkey"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///home/codhek/Supply_Chain/dbms.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///home/gur_chella/Supply_Chain/dbms.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///home/codhek/Supply_Chain/dbms.db'
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 mail=Mail(app)
 db = SQLAlchemy(app)
@@ -630,4 +631,4 @@ def logout():
 if __name__ == '__main__':
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(host='0.0.0.0', port=4500, debug=True)
+    app.run(debug=True)
