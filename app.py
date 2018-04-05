@@ -587,8 +587,13 @@ def confirmed_order(product_id):
 
 @app.route('/dashboard/transaction_complete/<transaction_id>', methods=['GET', 'POST'])
 def transaction_complete(transaction_id):
-    message = "Order placed Successfully!"
-    return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], transaction_id=transaction_id)
+    transaction_id_exists = Transactions.query.filter_by(transaction_id=transaction_id)
+    if transaction_id_exists:
+        message = "Order placed Successfully!"
+        return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], transaction_id=transaction_id)
+    else:
+        message = "Accessing extra-terrestrial area return now!"
+        return render_template('transaction_doesnt_exist.html', message=message)
 
 @app.route('/dashboard/delivered/<int:order_id>', methods=['GET', 'POST'])
 def delivered(order_id):
