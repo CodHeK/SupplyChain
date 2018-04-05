@@ -558,21 +558,25 @@ def confirmed_order(product_id):
         client_id = session['id']
         dealer_id = product.dealer_id
         quantity_ordered = form.quantity.data
-        if int(quantity_ordered) < int(product.quantity_avail):
-            new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
-            db.session.add(new_order)
-            db.session.commit()
-            new_quantity = int(product.quantity_avail) - int(quantity_ordered)
-            product.quantity_avail = str(new_quantity)
-            db.session.commit()
-            order_id = new_order.id
-            string_order_id = str(order_id).strip()
-            transaction_id = hashlib.sha224(string_order_id.encode()).hexdigest()
-            transaction_id = transaction_id[1:8]
-            new_transaction = Transactions(order_id=order_id, client_id=client_id, transaction_id=transaction_id)
-            db.session.add(new_transaction)
-            db.session.commit()
-            return render_template('transaction.html', session_username=session['username'], transaction_id=transaction_id, form=transactionForm)
+        if int(quantity_ordered) <= int(product.quantity_avail):
+            if int(quantity_ordered) > 0:
+                new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
+                db.session.add(new_order)
+                db.session.commit()
+                new_quantity = int(product.quantity_avail) - int(quantity_ordered)
+                product.quantity_avail = str(new_quantity)
+                db.session.commit()
+                order_id = new_order.id
+                string_order_id = str(order_id).strip()
+                transaction_id = hashlib.sha224(string_order_id.encode()).hexdigest()
+                transaction_id = transaction_id[1:8]
+                new_transaction = Transactions(order_id=order_id, client_id=client_id, transaction_id=transaction_id)
+                db.session.add(new_transaction)
+                db.session.commit()
+                return render_template('transaction.html', session_username=session['username'], transaction_id=transaction_id, form=transactionForm)
+            else:
+                message = "Can't order zero quantity lol!"
+                return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])
         else:
             message = "Select quantity less than " + quantity_ordered
             return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])

@@ -92,18 +92,20 @@ Dashboard
       <br>
       {% if message == '1' %}
         {% for product in products %}
-        <div class="jumbotron">
-          <h2>{{ product.description }}</h2>
-          {% set quantity = product.quantity_avail | int %}
-          {% if quantity < 3 %}
-            <h5>Only <b>{{ quantity }}</b> in Stock!</h5>
-          {% else %}
-            <h5>In Stock</h5>
-          {% endif %}
-          <h5><b>Price</b> : $&nbsp;{{ product.cost_each }}</h5>
-          <hr>
-          <a href="order/{{product.id}}" class="btn btn-default">ORDER</a>
-        </div>
+        {% set quantity = product.quantity_avail | int %}
+        {% if quantity > 0 %}
+          <div class="jumbotron">
+            <h2>{{ product.description }}</h2>
+              {% if quantity < 3 %}
+                <h5>Only <b>{{ quantity }}</b> in Stock!</h5>
+              {% else %}
+                <h5>In Stock</h5>
+              {% endif %}
+              <h5><b>Price</b> : $&nbsp;{{ product.cost_each }}</h5>
+            <hr>
+            <a href="order/{{product.id}}" class="btn btn-default">ORDER</a>
+          </div>
+        {% endif %}
         <br>
         {% endfor %}
       {% elif message == '0' %}
