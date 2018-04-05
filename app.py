@@ -585,7 +585,7 @@ def confirmed_order(product_id):
 
     return render_template('product.html', form=form, product=product, session_username=session['username'], profileForm=profileForm)
 
-@app.route('/dashboard/transaction_complete/<transaction_id>')
+@app.route('/dashboard/transaction_complete/<transaction_id>', methods=['GET', 'POST'])
 def transaction_complete(transaction_id):
     message = "Order placed Successfully!"
     return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], transaction_id=transaction_id)
