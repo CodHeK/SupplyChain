@@ -10,6 +10,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_mail import Mail,Message
 from itsdangerous import URLSafeTimedSerializer,SignatureExpired,BadTimeSignature
 import sqlite3 as sql
+import hashlib
 
 
 app = Flask(__name__)
@@ -74,8 +75,9 @@ class ClientDetails(db.Model):
 
 class Transactions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    transaction_id = db.Column(db.String(10))
     order_id = db.Column(db.Integer)
-    transaction = db.Column(db.Integer)
+    client_id = db.Column(db.Integer)
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid Email'), Length(max=50)])
@@ -127,6 +129,11 @@ class ProfileForm(FlaskForm):
     pincode = StringField('Pincode', validators=[InputRequired(), Length(min=0, max=100)])
     contact = StringField('Contact', validators=[InputRequired(), Length(min=0, max=100)])
     state = StringField('State', validators=[InputRequired(), Length(min=0, max=100)])
+
+class TransactionForm(FlaskForm):
+    card_num = StringField('Card Number', validators=[InputRequired(), Length(min=0, max=16)])
+    expiry_date = StringField('Expiry Date (mm/yy)', validators=[InputRequired(), Length(min=0, max=16)])
+    cvv = StringField('CVV', validators=[InputRequired(), Length(min=0, max=3)])
 
 @app.route('/')
 def index():
@@ -545,6 +552,7 @@ def order(product_id):
 def confirmed_order(product_id):
     form = QuantityForm()
     profileForm = ProfileForm()
+    transactionForm = TransactionForm()
     product = Products.query.filter_by(id=product_id).one()
     if form.validate_on_submit():
         client_id = session['id']
@@ -558,8 +566,13 @@ def confirmed_order(product_id):
             product.quantity_avail = str(new_quantity)
             db.session.commit()
             order_id = new_order.id
-            message = "Order placed Successfully!"
-            return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], order_id=order_id)
+            string_order_id = str(order_id).strip()
+            transaction_id = hashlib.sha224(string_order_id.encode()).hexdigest()
+            transaction_id = transaction_id[1:8]
+            new_transaction = Transactions(order_id=order_id, client_id=client_id, transaction_id=transaction_id)
+            db.session.add(new_transaction)
+            db.session.commit()
+            return render_template('transaction.html', session_username=session['username'], transaction_id=transaction_id, form=transactionForm)
         else:
             message = "Select quantity less than " + quantity_ordered
             return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])
@@ -571,6 +584,11 @@ def confirmed_order(product_id):
         return render_template('product.html', form=form, product=product, session_username=session['username'], profileForm=profileForm)
 
     return render_template('product.html', form=form, product=product, session_username=session['username'], profileForm=profileForm)
+
+@app.route('/dashboard/transaction_complete/<transaction_id>')
+def transaction_complete(transaction_id):
+    message = "Order placed Successfully!"
+    return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], transaction_id=transaction_id)
 
 @app.route('/dashboard/delivered/<int:order_id>', methods=['GET', 'POST'])
 def delivered(order_id):

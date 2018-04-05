@@ -49,14 +49,19 @@ Dashboard
           </ul>
         </li>
       </ul>
-
+      <!-- <form class="navbar-form navbar-left">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form> -->
       <ul class="nav navbar-nav navbar-right">
         <li><a href="#">Link</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><b>{{ session_username }}</b> <span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a href="#">Settings</a></li>
-            <li><a href="/profile">Edit profile</a></li>
+            <li><a href="/profile">Profile</a></li>
             <li><a href="#">My Orders</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="/logout">Logout</a></li>
@@ -66,11 +71,27 @@ Dashboard
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-<div class="container"  style="padding-top: 5%;text-align: center;">
-  <i class="fas fa-check-circle" style="width: 200px; height: 200px;color: #00ff00;"></i>
-  <h2> {{ message }} </h2>
-  <h4>TRANSACTION ID - <b>{{ transaction_id }}</b></h4>
-  <hr />
-  <a href="/dashboard/client" class="btn btn-default">BACK TO DASHBOARD</a>
+<div class="container"  style="padding-top: 5%;">
+  <div class="row">
+  <div class="col-lg-3 col-md-3"></div>
+  <div class="col-lg-6 col-md-6">
+    <h2 style="text-align: center;padding-top: 3%;">Add your card details</h2>
+    <form method="POST" action="/dashboard/transaction_complete/{{transaction_id}}">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_field(form.card_num) }}
+      <div class="row">
+        <div class="col-lg-6 col-md-6">
+            {{ wtf.form_field(form.expiry_date) }}
+        </div>
+        <div class="col-lg-6 col-md-6">
+            {{ wtf.form_field(form.cvv) }}
+        </div>
+      </div>
+      <button type="submit" class="btn btn-default">PAY NOW</button>
+    </form>
+  </div>
+  <div class="col-lg-3 col-md-3"></div>
+  </div>
+
 </div>
 {% endblock %}
