@@ -77,47 +77,47 @@ Dashboard
   <div class="col-lg-6 col-md-6">
   {% if transaction == "incomplete" %}
     <h2 style="text-align: center;padding-top: 3%;">Complete your profile</h2>
-    <form method="POST" action="/save">
-      {{ form.hidden_tag() }}
-      {{ wtf.form_field(form.address) }}
+    <form method="POST" action="/order_confirmed/{{product_id}}">
+      {{ profileForm.hidden_tag() }}
+      {{ wtf.form_field(profileForm.address) }}
       <div class="row">
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.city) }}
+            {{ wtf.form_field(profileForm.city) }}
         </div>
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.state) }}
+            {{ wtf.form_field(profileForm.state) }}
         </div>
       </div>
       <div class="row">
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.pincode) }}
+            {{ wtf.form_field(profileForm.pincode) }}
         </div>
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.contact) }}
+            {{ wtf.form_field(profileForm.contact) }}
         </div>
       </div>
-      <button type="submit" class="btn btn-default">Confirm Order</button>
+      <button type="submit" class="btn btn-default">Save</button>
     </form>
   {% else %}
     <h2 style="text-align: center;padding-top: 3%;">Edit your profile</h2>
     <br>
     <form method="POST" action="/profile">
-      {{ form.hidden_tag() }}
-      {{ wtf.form_field(form.address) }}
+      {{ profileForm.hidden_tag() }}
+      {{ wtf.form_field(profileForm.address) }}
       <div class="row">
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.city) }}
+            {{ wtf.form_field(profileForm.city) }}
         </div>
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.state) }}
+            {{ wtf.form_field(profileForm.state) }}
         </div>
       </div>
       <div class="row">
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.pincode) }}
+            {{ wtf.form_field(profileForm.pincode) }}
         </div>
         <div class="col-lg-6 col-md-6">
-            {{ wtf.form_field(form.contact) }}
+            {{ wtf.form_field(profileForm.contact) }}
         </div>
       </div>
       <button type="submit" class="btn btn-default">SAVE</button>

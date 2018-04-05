@@ -17,7 +17,7 @@ app.config.from_pyfile('config.cfg')
 app.config['SECRET_KEY'] = "thisisasecretkey"
 app.secret_key = "yolosecretkey"
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///home/gur_chella/Supply_Chain/dbms.db'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///home/codhek/Supply_Chain/dbms.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://///home/codhek/Supply_Chain/dbms1.db'
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 mail=Mail(app)
 db = SQLAlchemy(app)
@@ -72,6 +72,10 @@ class ClientDetails(db.Model):
     contact = db.Column(db.String(100))
     state = db.Column(db.String(100))
 
+class Transactions(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer)
+    transaction = db.Column(db.Integer)
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid Email'), Length(max=50)])
@@ -526,8 +530,16 @@ def print_inventory():
 @app.route('/dashboard/order/<int:product_id>', methods=['GET', 'POST'])
 def order(product_id):
     form = QuantityForm()
+    profileForm = ProfileForm()
+    client_id = session['id']
     product = Products.query.filter_by(id=product_id).one()
-    return render_template('product.html', form=form, product=product, session_username=session['username'])
+    client_found = ClientDetails.query.filter_by(client_id=client_id).first()
+    if client_found:
+        return render_template('product.html', form=form, product=product, session_username=session['username'])
+    else:
+        transaction = "incomplete"
+        return render_template('profile.html',profileForm=profileForm, session_username=session['username'], transaction=transaction, product_id=product_id)
+
 
 @app.route('/order_confirmed/<int:product_id>', methods=['GET', 'POST'])
 def confirmed_order(product_id):
@@ -538,34 +550,27 @@ def confirmed_order(product_id):
         client_id = session['id']
         dealer_id = product.dealer_id
         quantity_ordered = form.quantity.data
-        client_found = ClientDetails.query.filter_by(client_id=client_id).first()
-        if client_found:
-            if int(quantity_ordered) < int(product.quantity_avail):
-                new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
-                db.session.add(new_order)
-                db.session.commit()
-                new_quantity = int(product.quantity_avail) - int(quantity_ordered)
-                product.quantity_avail = str(new_quantity)
-                db.session.commit()
-                order_id = new_order.id
-                message = "Order placed Successfully!"
-                return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], order_id=order_id)
-            else:
-                message = "Select quantity less than " + quantity_ordered
-                return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])
+        if int(quantity_ordered) < int(product.quantity_avail):
+            new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
+            db.session.add(new_order)
+            db.session.commit()
+            new_quantity = int(product.quantity_avail) - int(quantity_ordered)
+            product.quantity_avail = str(new_quantity)
+            db.session.commit()
+            order_id = new_order.id
+            message = "Order placed Successfully!"
+            return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], order_id=order_id)
         else:
-            transaction = "incomplete"
-            if int(quantity_ordered) < int(product.quantity_avail):
-                new_order = Order(product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
-                db.session.add(new_order)
-                db.session.commit()
-                message = "Order placed Successfully!"
-                return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], order_id=order_id)
-            else:
-                message = "Select quantity less than " + quantity_ordered
-                return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])
-            return render_template('profile.html',form=profileForm, session_username=session['username'], transaction=transaction)
-    return render_template('product.html', form=form, product=product, session_username=session['username'])
+            message = "Select quantity less than " + quantity_ordered
+            return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])
+
+    elif profileForm.validate_on_submit():
+        save_profile = ClientDetails(city=profileForm.city.data, client_id=session['id'], address=profileForm.address.data, pincode=profileForm.pincode.data, state=profileForm.state.data, contact=profileForm.contact.data)
+        db.session.add(save_profile)
+        db.session.commit()
+        return render_template('product.html', form=form, product=product, session_username=session['username'], profileForm=profileForm)
+
+    return render_template('product.html', form=form, product=product, session_username=session['username'], profileForm=profileForm)
 
 @app.route('/dashboard/delivered/<int:order_id>', methods=['GET', 'POST'])
 def delivered(order_id):
@@ -596,8 +601,8 @@ def profile():
         save_profile = ClientDetails(city=form.city.data, client_id=session['id'], address=form.address.data, pincode=form.pincode.data, state=form.state.data, contact=form.contact.data)
         db.session.add(save_profile)
         db.session.commit()
-        return render_template('profile.html', form=form, session_username=session['username'], transaction=transaction)
-    return render_template('profile.html', form=form, session_username=session['username'], transaction=transaction)
+        return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction)
+    return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction)
 
 @app.route('/save', methods=['GET', 'POST'])
 def save():
