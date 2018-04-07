@@ -685,24 +685,31 @@ def confirm_cancel(order_id):
     return redirect(url_for('history'))
 
 ##################################################
-@app.route('/dashboard/admin/cancel_requests')
+@app.route('/dashboard/admin/cancel_requests', methods=['GET', 'POST'])
 def cancel_requests():
-    requests=CancelOrder.query.order_by(CancelOrder.id)
-    return render_template('cancel_requests.html',requests=requests)
+    requests=CancelOrder.query.order_by(desc(CancelOrder.id))
+    return render_template('cancel_requests.html',requests=requests, session_username=session['username'])
 
-@app.route('/dashboard/admin/cancel_requests/<bit>/<id>')
+@app.route('/dashboard/admin/cancel_requests/<int:bit>/<int:id>', methods=['GET', 'POST'])
 def can_req(bit,id):
-    if bit==1:
-        req=CancelOrder.query.filter_by(id=id).first()
-        orders=Order.query.filter_by(id=req.order_id).first()
-        prod_id=orders.product_id
-        prod=Products.query.filter_by(id=prod_id).first()
-        prod.quantity_avail+=orders.quantity
-        db.session.delete(orders)
+    if bit == 1:
+        req = CancelOrder.query.filter_by(id=id).first()
         db.session.delete(req)
         db.session.commit()
+        orders = Order.query.filter_by(id=req.order_id).first()
+        db.session.delete(orders)
+        db.session.commit()
+        trans = Transactions.query.filter_by(order_id=req.order_id).first()
+        db.session.delete(trans)
+        db.session.commit()
+        prod_id = orders.product_id
+        prod = Products.query.filter_by(id=prod_id).first()
+        d = int(prod.quantity_avail)
+        d += int(orders.quantity)
+        prod.quantity_avail = str(d)
+        db.session.commit()
     else:
-        req=CancelOrder.query.filter_by(id=id)
+        req=CancelOrder.query.filter_by(id=id).first()
         db.session.delete(req)
         db.session.commit()
     return redirect(url_for('cancel_requests'))
