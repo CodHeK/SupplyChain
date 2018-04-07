@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session,request
+from flask import Flask, render_template, redirect, url_for, session,request, make_response
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField
@@ -11,6 +11,7 @@ from flask_mail import Mail,Message
 from itsdangerous import URLSafeTimedSerializer,SignatureExpired,BadTimeSignature
 import sqlite3 as sql
 import hashlib
+import pdfkit
 
 
 app = Flask(__name__)
@@ -32,6 +33,9 @@ s=URLSafeTimedSerializer(app.config['SECRET_KEY'])
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# TABLES
+################################################################
 
 class User(UserMixin,db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -57,9 +61,16 @@ class UpdateItem(db.Model):
     cost_each = db.Column(db.String(100))
     min_quantity=db.Column(db.Integer)
 
+class UpdateInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(15))
+    email = db.Column(db.String(30))
+    type = db.Column(db.String(20))
+    password = db.Column(db.String(80))
+    confirm_email=db.Column(db.Boolean)
+
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    #hashed_id=db.Column(db.Integer)
     client_id = db.Column(db.Integer)
     product_id = db.Column(db.Integer)
     dealer_id = db.Column(db.Integer)
@@ -74,7 +85,6 @@ class ClientDetails(db.Model):
     contact = db.Column(db.String(100))
     state = db.Column(db.String(100))
 
-
 class CancelOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id=db.Column(db.Integer)
@@ -84,6 +94,12 @@ class Transactions(db.Model):
     transaction_id = db.Column(db.String(10))
     order_id = db.Column(db.Integer)
     client_id = db.Column(db.Integer)
+
+####################################################
+
+#FORMS
+
+####################################################
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid Email'), Length(max=50)])
@@ -126,6 +142,11 @@ class ChangePasswordForm(FlaskForm):
     new_password = PasswordField('New Password', validators=[InputRequired(), Length(min=6, max=90)])
     confirm_new_password = PasswordField('Confirm New Password', validators=[InputRequired(), Length(min=6, max=90)])
 
+class EditProfile(FlaskForm):
+    password=PasswordField('Password', validators=[InputRequired(), Length(min=6, max=90)])
+    email = StringField('Email', validators=[InputRequired(), Email(message='Invalid Email'), Length(max=50)])
+    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=15)])
+
 class QuantityForm(FlaskForm):
     quantity = StringField('Quantity', validators=[InputRequired(), Length(min=0, max=100)])
 
@@ -140,6 +161,8 @@ class TransactionForm(FlaskForm):
     card_num = StringField('Card Number', validators=[InputRequired(), Length(min=0, max=16)])
     expiry_date = StringField('Expiry Date (mm/yy)', validators=[InputRequired(), Length(min=0, max=16)])
     cvv = StringField('CVV', validators=[InputRequired(), Length(min=0, max=3)])
+
+#########################################################
 
 @app.route('/')
 def index():
@@ -370,8 +393,6 @@ def dashboard_admin():
         session_type = session['type']
         return render_template('not_logged_in.html',session_type=session_type)
 
-######################################################
-
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     form = AddProductForm()
@@ -384,8 +405,6 @@ def add():
         return render_template('add_product.html', message="Product added successfully!", session_username=session_username, form=form)
     return render_template('add_product.html', session_username=session_username, form=form)
 
-
-##################################################
 
 @app.route('/forgot_password/client', methods=['GET', 'POST'])
 def forgot_password_client():
@@ -430,6 +449,7 @@ def forgot_password_dealer():
             return render_template('forgot_password_dealer.html', message=message, form=form)
 
     return render_template('forgot_password_dealer.html', form=form)
+
 @app.route('/forgot_password/admin', methods=['GET', 'POST'])
 def forgot_password_admin():
     form = ForgotPasswordForm()
@@ -452,8 +472,6 @@ def forgot_password_admin():
 
     return render_template('forgot_password_admin.html', form=form)
 
-
-##################################################
 @app.route('/password_reset/<token>/<types>', methods=['GET', 'POST'])
 def password_reset(token,types):
     form=PasswordResetForm()
@@ -496,10 +514,6 @@ def password_reset(token,types):
         return '<h1>ok!</h1>'
     return render_template('password_reset.html', form=form,token=token,types=types)
 
-
-
-
-##################################################
 @app.route('/change_password/<types>',methods=['GET', 'POST'])
 def change_password(types):
     form=ChangePasswordForm()
@@ -529,7 +543,7 @@ def change_password(types):
     #return '<h1>the types is {}!</h1>'.format(types)
     return render_template('change_password.html',form=form,types=types)
 
-##################################################
+
 @app.route('/print_inventory')
 #@login_required
 def print_inventory():
@@ -543,7 +557,223 @@ def print_inventory():
     rows = cur.fetchall();
     return render_template("print_items.html",rows = rows)
 
-#####################################################
+@app.route('/update_item', methods=['GET', 'POST'])
+def update_item():
+    form = AddProductForm()
+    session_username = session['username']
+    if form.validate_on_submit():
+        dealer_id = session['id']
+        new_product = UpdateItem(description=form.description.data, dealer_id=dealer_id, cost_each=form.cost_each.data, quantity_avail=form.quantity_avail.data,min_quantity=form.min_quantity.data)
+        prod=UpdateItem.query.filter_by(description=form.description.data,dealer_id=dealer_id).first()
+        if prod:
+            prod.description=new_product.description
+            prod.dealer_id=new_product.dealer_id
+            prod.cost_each=new_product.cost_each
+            prod.quantity_avail=new_product.quantity_avail
+            prod.min_quantity=new_product.min_quantity
+            db.session.commit()
+            return render_template('update_item.html', message="Update request sennt successfully!", session_username=session_username, form=form)
+        db.session.add(new_product)
+        db.session.commit()
+        return render_template('update_item.html', message="Update request sent successfully!", session_username=session_username, form=form)
+    return render_template('update_item.html', session_username=session_username, form=form)
+
+
+@app.route('/dashboard/admin/update_items',methods=['GET', 'POST'])
+#@login_required
+def update_items():
+    if 'username' in session:
+        session_username = session['username']
+        session_username = session_username[0].upper() + session_username[1:]
+        session_type = session['type']
+        products = UpdateItem.query.order_by(desc(UpdateItem.id))
+        return render_template('dashboard_admin_update_items.html',session_type=session_type,products=products)
+    else:
+        session_type = session['type']
+        return render_template('not_logged_in.html',session_type=session_type)
+
+
+@app.route('/dashboard/admin/update_items/<bit>/<id>')
+def update(bit,id):
+    if bit=='0':
+        id=int(id)
+        prod=UpdateItem.query.filter_by(id=id).first()
+        if prod:
+            db.session.delete(prod)
+            db.session.commit()
+            return redirect(url_for('update_items'))
+    elif bit=='1':
+        id=int(id)
+        prod=UpdateItem.query.filter_by(id=id).first()
+        if prod:
+            change_prod=Products.query.filter_by(dealer_id=prod.dealer_id,description=prod.description).first()
+            #change_prod.description=prod.description
+            #change_prod.dealer_id=prod.dealer_id
+            #return '<h1>{}</h1>'.format(change_prod.id)
+            change_prod.quantity_avail=prod.quantity_avail
+            change_prod.min_quantity=prod.min_quantity
+            change_prod.cost_each=prod.cost_each
+            #db.session.commit()
+            db.session.delete(prod)
+            db.session.commit()
+
+    return redirect(url_for('update_items'))
+
+@app.route('/dashboard/admin/view_profile',methods=['GET', 'POST'])
+def view_profile_admin():
+    #return '<h1>ok!</h1>'
+    user_id=session['id']
+    #return '<h1>{}</h1>'.format(user_id)
+    user=User.query.filter_by(id=user_id).first()
+    username=user.username
+    username=username[0].upper() + username[1:]
+    #return '<h1>{}</h1>'.format(username)
+    return render_template('view_profile_admin.html',username=username,user=user)
+
+    
+@app.route('/dashboard/admin/edit_profile',methods=['GET', 'POST'])
+def edit_profile_admin():
+    form=EditProfile()
+    users=session['username']
+    users=users[0].upper() + users[1:]
+    if form.validate_on_submit():
+        password=form.password.data
+        email=form.email.data
+        username=form.username.data
+        #return '<h1>{}</h1>'.format(session['id'])
+        user=User.query.filter_by(id=session['id']).first()
+        if check_password_hash(user.password, form.password.data):
+            user.email=email
+            user.username=username
+            db.session.commit()
+            users=user.username
+            users=users[0].upper() + users[1:]
+            #return '<h1>{}</h1>'.format(users)
+            return render_template('edit_profile_admin.html',message="succesfully made changes!",form=form,username=users)
+        else:
+            return render_template('edit_profile_admin.html',message="incorrect password!",form=form,username=users)
+    return render_template('edit_profile_admin.html',form=form,username=users)
+
+
+@app.route('/dashboard/client/view_profile',methods=['GET', 'POST'])
+def view_profile_client():
+    #return '<h1>ok!</h1>'
+    user_id=session['id']
+    #return '<h1>{}</h1>'.format(user_id)
+    user=User.query.filter_by(id=user_id).first()
+    username=user.username
+    username=username[0].upper() + username[1:]
+    #return '<h1>{}</h1>'.format(username)
+    return render_template('view_profile_client.html',username=username,user=user)
+
+@app.route('/dashboard/client/edit_profile',methods=['GET', 'POST'])
+def edit_profile_client():
+    form=EditProfile()
+    users=session['username']
+    users=users[0].upper() + users[1:]
+    if form.validate_on_submit():
+        password=form.password.data
+        email=form.email.data
+        username=form.username.data
+        #return '<h1>{}</h1>'.format(session['id'])
+        user=User.query.filter_by(id=session['id']).first()
+        if check_password_hash(user.password, form.password.data):
+            hashed_password = generate_password_hash(user.password, method='sha256')
+            new_user=UpdateInfo(id=session['id'],username=username,email=email,type=session['type'],password=hashed_password,confirm_email=user.confirm_email)
+            exist_user=UpdateInfo.query.filter_by(id=session['id']).first()
+            if exist_user:
+                #return '<h1>ok!</h1>'
+                exist_user.username=username
+                exist_user.email=email
+                db.session.commit()
+                #return '<h1>{}</h1>'.format(exist_user.username)
+                return render_template('edit_profile_client.html',message="succesfully made request!",form=form,username=users)
+            db.session.add(new_user)
+            db.session.commit()
+            #return '<h1>{}</h1>'.format(users)
+            return render_template('edit_profile_client.html',message="succesfully made request!",form=form,username=users)
+        else:
+            return render_template('edit_profile_client.html',message="incorrect password!",form=form,username=users)
+    return render_template('edit_profile_client.html',form=form,username=users)
+
+
+@app.route('/dashboard/dealer/view_profile',methods=['GET', 'POST'])
+def view_profile_dealer():
+    #return '<h1>ok!</h1>'
+    user_id=session['id']
+    #return '<h1>{}</h1>'.format(user_id)
+    user=User.query.filter_by(id=user_id).first()
+    username=user.username
+    username=username[0].upper() + username[1:]
+    #return '<h1>{}</h1>'.format(username)
+    return render_template('view_profile_dealer.html',username=username,user=user)
+
+@app.route('/dashboard/dealer/edit_profile',methods=['GET', 'POST'])
+def edit_profile_dealer():
+    form=EditProfile()
+    users=session['username']
+    users=users[0].upper() + users[1:]
+    if form.validate_on_submit():
+        password=form.password.data
+        email=form.email.data
+        username=form.username.data
+        #return '<h1>{}</h1>'.format(session['id'])
+        user=User.query.filter_by(id=session['id']).first()
+        if check_password_hash(user.password, form.password.data):
+            hashed_password = generate_password_hash(user.password, method='sha256')
+            new_user=UpdateInfo(id=session['id'],username=username,email=email,type=session['type'],password=hashed_password,confirm_email=user.confirm_email)
+            exist_user=UpdateInfo.query.filter_by(id=session['id']).first()
+            if exist_user:
+                #return '<h1>ok!</h1>'
+                exist_user.username=username
+                exist_user.email=email
+                db.session.commit()
+                #return '<h1>{}</h1>'.format(exist_user.username)
+                return render_template('edit_profile_client.html',message="succesfully made request!",form=form,username=users)
+            db.session.add(new_user)
+            db.session.commit()
+            #return '<h1>{}</h1>'.format(users)
+            return render_template('edit_profile_dealer.html',message="succesfully made request!",form=form,username=users)
+        else:
+            return render_template('edit_profile_dealer.html',message="incorrect password!",form=form,username=users)
+    return render_template('edit_profile_dealer.html',form=form,username=users)
+
+
+@app.route('/dashboard/admin/update_members',methods=['GET', 'POST'])
+#@login_required
+def update_members():
+    if 'username' in session:
+        session_username = session['username']
+        session_username = session_username[0].upper() + session_username[1:]
+        session_type = session['type']
+        members = UpdateInfo.query.order_by(desc(UpdateInfo.id))
+        return render_template('dashboard_admin_update_members.html',session_type=session_type,members=members,username=session['username'])
+    else:
+        session_type = session['type']
+        return render_template('not_logged_in.html',session_type=session_type)
+
+
+@app.route('/dashboard/admin/update_members/<bit>/<id>')
+def update_member_bit(bit,id):
+    if bit=='0':
+        id=int(id)
+        memb=UpdateInfo.query.filter_by(id=id).first()
+        if memb:
+            db.session.delete(memb)
+            db.session.commit()
+            return redirect(url_for('update_members'))
+    elif bit=='1':
+        id=int(id)
+        memb=UpdateInfo.query.filter_by(id=id).first()
+        if memb:
+            change_memb=User.query.filter_by(id=memb.id).first()
+            change_memb.email=memb.email
+            change_memb.username=memb.username
+            db.session.delete(memb)
+            db.session.commit()
+
+    return redirect(url_for('update_members'))
+
 
 @app.route('/dashboard/order/<int:product_id>', methods=['GET', 'POST'])
 def order(product_id):
@@ -632,8 +862,8 @@ def history():
     for each_order in my_orders:
         product_data = Products.query.filter_by(id=each_order.product_id)
         list_of_products.append(product_data)
-
-    return render_template('history_client.html', session_username=session['username'], my_orders=my_orders, list_of_products=list_of_products)
+    message = ""
+    return render_template('history_client.html', session_username=session['username'], my_orders=my_orders, list_of_products=list_of_products, message=message)
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -655,11 +885,6 @@ def save():
         db.session.commit()
         return redirect(url_for('dashboard_client'))
 
-
-##################################################
-# @app.route('/update_item')
-# def update_item():
-#     form=
 ##################################################
 @app.route('/cancel_order/<order_id>')
 def cancel_order(order_id):
@@ -715,6 +940,22 @@ def can_req(bit,id):
     return redirect(url_for('cancel_requests'))
 
 
+
+##################################################
+@app.route('/PrintReport')
+def print_pdf():
+    # all_products = Products.query.all()
+    # orders = []
+    # for each_product in all_products:
+    #     all_orders_for_this_product = Order.query.filter_by(product_id=each_product.id)
+    #     orders.append(all_orders_for_this_product)
+    # rendered = render_template('dashboard_admin.html', session_username=session['username'], orders=orders, all_products=all_products)
+    # pdf = pdfkit.from_string(rendered, False)
+    # response = make_response(pdf)
+    # response.headers['Content-Type'] = 'application/pdf'
+    # response.headers['Content-Disposition'] = 'inline; filename=report.pdf'
+    # return response
+    pdfkit.from_url('http://localhost:5000/dashboard/admin', 'report.pdf')
 
 ##################################################
 @app.route('/logout')

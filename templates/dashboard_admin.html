@@ -9,9 +9,12 @@ Dashboard
 {{super()}}
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <link rel="stylesheet" href="{{url_for('.static', filename='bootstrap.min.css')}}">
-<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
 <srcipt src="{{url_for('.static', filename='bootstrap.min.js')}}">
-<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+<style>
+  html, body {
+    font-family: 'Montserrat', sans-serif;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -106,7 +109,7 @@ Dashboard
           {% endfor %}
       </tbody>
     </table>
-    <a href="#" class="btn btn-default" style="text-align: right;">PRINT REPORT</a>
+    <a href="/PrintReport" class="btn btn-default" style="text-align: right;">PRINT REPORT</a>
   </div>
   <br><br>
 </div>
