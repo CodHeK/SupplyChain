@@ -59,6 +59,7 @@ class UpdateItem(db.Model):
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    #hashed_id=db.Column(db.Integer)
     client_id = db.Column(db.Integer)
     product_id = db.Column(db.Integer)
     dealer_id = db.Column(db.Integer)
@@ -72,6 +73,11 @@ class ClientDetails(db.Model):
     pincode = db.Column(db.String(100))
     contact = db.Column(db.String(100))
     state = db.Column(db.String(100))
+
+
+class CancelOrder(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id=db.Column(db.Integer)
 
 class Transactions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -308,7 +314,7 @@ def confirm_email(token,types):
 @app.route('/dashboard/client', methods=['GET', 'POST'])
 def dashboard_client():
     form = SearchForm()
-    if 'username' in session:
+    if 'username' in session and session['type'] == 'client':
         session_username = session['username']
         session_username = session_username[0].upper() + session_username[1:]
         products = Products.query.order_by(desc(Products.id))
@@ -330,7 +336,7 @@ def dashboard_client():
 
 @app.route('/dashboard/dealer', methods=['GET', 'POST'])
 def dashboard_dealer():
-    if 'username' in session:
+    if 'username' in session and session['type'] == 'dealer':
         session_username = session['username']
         session_username = session_username[0].upper() + session_username[1:]
         orders = Order.query.filter_by(dealer_id=session['id']).order_by(desc(Order.id))
@@ -351,10 +357,15 @@ def dashboard_dealer():
 
 @app.route('/dashboard/admin', methods=['GET', 'POST'])
 def dashboard_admin():
-    if 'username' in session:
+    if 'username' in session and session['type'] == 'admin':
         session_username = session['username']
         session_username = session_username[0].upper() + session_username[1:]
-        return render_template('dashboard_admin.html',session_username=session_username)
+        all_products = Products.query.all()
+        orders = []
+        for each_product in all_products:
+            all_orders_for_this_product = Order.query.filter_by(product_id=each_product.id)
+            orders.append(all_orders_for_this_product)
+        return render_template('dashboard_admin.html',session_username=session_username, orders=orders, all_products=all_products)
     else:
         session_type = session['type']
         return render_template('not_logged_in.html',session_type=session_type)
@@ -560,8 +571,12 @@ def confirmed_order(product_id):
         quantity_ordered = form.quantity.data
         if int(quantity_ordered) <= int(product.quantity_avail):
             if int(quantity_ordered) > 0:
+
                 new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
+                #hashed_id = generate_password_hash(new_order.id, method='sha256')
+                #new_order.hashed_id=hashed_id
                 db.session.add(new_order)
+                #hashed_id = generate_password_hash(, method='sha256')
                 db.session.commit()
                 new_quantity = int(product.quantity_avail) - int(quantity_ordered)
                 product.quantity_avail = str(new_quantity)
@@ -612,7 +627,7 @@ def notifications():
 
 @app.route('/history', methods=['GET', 'POST'])
 def history():
-    my_orders = Order.query.filter_by(client_id=session['id'])
+    my_orders = Order.query.filter_by(client_id=session['id']).order_by(desc(Order.id))
     list_of_products = []
     for each_order in my_orders:
         product_data = Products.query.filter_by(id=each_order.product_id)
@@ -645,6 +660,55 @@ def save():
 # @app.route('/update_item')
 # def update_item():
 #     form=
+##################################################
+@app.route('/cancel_order/<order_id>')
+def cancel_order(order_id):
+    curr=Order.query.filter_by(id=order_id).first()
+    if curr.client_id==session['id']:
+        return render_template('cancel_order.html',order_id=order_id)
+    else:
+        return redirect(url_for('history'))
+
+
+@app.route('/cancel/<order_id>')
+def confirm_cancel(order_id):
+    curr=Order.query.filter_by(id=order_id).first()
+    if curr.client_id==session['id']:
+        newcan=CancelOrder(order_id=order_id)
+        oldcan=CancelOrder.query.filter_by(order_id=order_id).first()
+        if oldcan:
+            #return '<h1>{}</h1>'.format(oldcan.order_id)
+            return redirect(url_for('history'))
+        db.session.add(newcan)
+        db.session.commit()
+
+    return redirect(url_for('history'))
+
+##################################################
+@app.route('/dashboard/admin/cancel_requests')
+def cancel_requests():
+    requests=CancelOrder.query.order_by(CancelOrder.id)
+    return render_template('cancel_requests.html',requests=requests)
+
+@app.route('/dashboard/admin/cancel_requests/<bit>/<id>')
+def can_req(bit,id):
+    if bit==1:
+        req=CancelOrder.query.filter_by(id=id).first()
+        orders=Order.query.filter_by(id=req.order_id).first()
+        prod_id=orders.product_id
+        prod=Products.query.filter_by(id=prod_id).first()
+        prod.quantity_avail+=orders.quantity
+        db.session.delete(orders)
+        db.session.delete(req)
+        db.session.commit()
+    else:
+        req=CancelOrder.query.filter_by(id=id)
+        db.session.delete(req)
+        db.session.commit()
+    return redirect(url_for('cancel_requests'))
+
+
+
 ##################################################
 @app.route('/logout')
 # @login_required
