@@ -630,7 +630,7 @@ def view_profile_admin():
     #return '<h1>{}</h1>'.format(username)
     return render_template('view_profile_admin.html',username=username,user=user)
 
-    
+
 @app.route('/dashboard/admin/edit_profile',methods=['GET', 'POST'])
 def edit_profile_admin():
     form=EditProfile()
@@ -885,7 +885,6 @@ def save():
         db.session.commit()
         return redirect(url_for('dashboard_client'))
 
-##################################################
 @app.route('/cancel_order/<order_id>')
 def cancel_order(order_id):
     curr=Order.query.filter_by(id=order_id).first()
@@ -909,7 +908,7 @@ def confirm_cancel(order_id):
 
     return redirect(url_for('history'))
 
-##################################################
+
 @app.route('/dashboard/admin/cancel_requests', methods=['GET', 'POST'])
 def cancel_requests():
     requests=CancelOrder.query.order_by(desc(CancelOrder.id))
@@ -939,9 +938,6 @@ def can_req(bit,id):
         db.session.commit()
     return redirect(url_for('cancel_requests'))
 
-
-
-##################################################
 @app.route('/PrintReport')
 def print_pdf():
     # all_products = Products.query.all()
@@ -957,7 +953,7 @@ def print_pdf():
     # return response
     pdfkit.from_url('http://localhost:5000/dashboard/admin', 'report.pdf')
 
-##################################################
+
 @app.route('/logout')
 # @login_required
 def logout():
