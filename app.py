@@ -79,11 +79,11 @@ class Order(db.Model):
 class ClientDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer)
-    city = db.Column(db.String(100))
+#     city = db.Column(db.String(100))
     address = db.Column(db.String(1000))
-    pincode = db.Column(db.String(100))
+#     pincode = db.Column(db.String(100))
     contact = db.Column(db.String(100))
-    state = db.Column(db.String(100))
+#     state = db.Column(db.String(100))
 
 class CancelOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
