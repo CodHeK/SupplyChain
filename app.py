@@ -413,7 +413,7 @@ def forgot_password_client():
             link=url_for('password_reset',token=token,types='client',_external=True)
             msg.body='Your link is {}'.format(link)
             mail.send(msg)
-            message = "** tu toh cool ban gaya!"
+            message = "** We've sent you an email for creating a new password! :)"
             return render_template('forgot_password_client.html', message=message, form=form)
 
         else:
@@ -435,7 +435,7 @@ def forgot_password_dealer():
             link=url_for('password_reset',token=token,types='dealer',_external=True)
             msg.body='Your link is {}'.format(link)
             mail.send(msg)
-            message = "** tu toh cool ban gaya!"
+            message = "** We've sent you an email for creating a new password! :)"
             return render_template('forgot_password_dealer.html', message=message, form=form)
 
         else:
@@ -457,11 +457,11 @@ def forgot_password_admin():
             link=url_for('password_reset',token=token,types='admin',_external=True)
             msg.body='Your link is {}'.format(link)
             mail.send(msg)
-            message = "** tu toh cool ban gaya!"
+            message = "** We've sent you an email for creating a new password! :)"
             return render_template('forgot_password_admin.html', message=message, form=form)
 
         else:
-            message = "** email does not exit!"
+            message = "** email does not exist!"
             return render_template('forgot_password_admin.html', message=message, form=form)
 
     return render_template('forgot_password_admin.html', form=form)
@@ -482,8 +482,12 @@ def password_reset(token,types):
                 hashed_password=generate_password_hash(form.password.data, method='sha256')
                 user.password=hashed_password
                 db.session.commit()
-                return '<h1>done!</h1>'
-
+                if types == 'client':
+                    return redirect(url_for('login_client'))
+                elif types == 'dealer':
+                    return redirect(url_for('login_dealer'))
+                else:
+                    return redirect(url_for('login_admin'))
             else:
                 message='the password fields dont match!'
                 return render_template('password_reset.html', message=message,form=form,token=token,types=types)
@@ -523,7 +527,12 @@ def change_password(types):
                     hashed_password=generate_password_hash(new_password, method='sha256')
                     user.password=hashed_password
                     db.session.commit()
-                    return '<h1>done!</h1>'
+                    if types == 'client':
+                        return redirect(url_for('dashboard_client'))
+                    elif types == 'dealer':
+                        return redirect(url_for('dashboard_dealer'))
+                    else:
+                        return redirect(url_for('dashboard_admin'))
                 else:
                     message='**new password and confirm new password fields dont match!!'
                     return render_template('change_password.html',message=message,form=form,types=types)
@@ -537,12 +546,17 @@ def change_password(types):
     #return '<h1>the types is {}!</h1>'.format(types)
     return render_template('change_password.html',form=form,types=types)
 
+@app.route('/my_products', methods=['GET', 'POST'])
+def my_products():
+    dealer_id = session['id']
+    my_products = Products.query.filter_by(dealer_id=dealer_id)
+    return render_template('my_products.html', session_username=session['username'], my_products=my_products)
 
 @app.route('/print_inventory')
 #@login_required
 def print_inventory():
 
-    con = sql.connect("dbms.db")
+    con = sql.connect("dbms1.db")
     con.row_factory = sql.Row
 
     cur = con.cursor()
@@ -566,7 +580,7 @@ def update_item():
             prod.quantity_avail=new_product.quantity_avail
             prod.min_quantity=new_product.min_quantity
             db.session.commit()
-            return render_template('update_item.html', message="Update request sennt successfully!", session_username=session_username, form=form)
+            return render_template('update_item.html', message="Update request sent successfully!", session_username=session_username, form=form)
         db.session.add(new_product)
         db.session.commit()
         return render_template('update_item.html', message="Update request sent successfully!", session_username=session_username, form=form)
@@ -581,7 +595,7 @@ def update_items():
         session_username = session_username[0].upper() + session_username[1:]
         session_type = session['type']
         products = UpdateItem.query.order_by(desc(UpdateItem.id))
-        return render_template('dashboard_admin_update_items.html',session_type=session_type,products=products)
+        return render_template('dashboard_admin_update_items.html',session_type=session_type,products=products, session_username=session['username'])
     else:
         session_type = session['type']
         return render_template('not_logged_in.html',session_type=session_type)
@@ -864,10 +878,19 @@ def profile():
     form = ProfileForm()
     transaction = "complete"
     if form.validate_on_submit():
-        save_profile = ClientDetails(client_id=session['id'], address=form.address.data, contact=form.contact.data)
-        db.session.add(save_profile)
-        db.session.commit()
-        return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction)
+        there_is_user = ClientDetails.query.filter_by(client_id=session['id']).first()
+        if there_is_user:
+            there_is_user.address = form.address.data
+            there_is_user.contact = form.contact.data
+            db.session.commit()
+            message = "Changed made to your profile succesfully!"
+            return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction, message=message)
+        else:
+            save_profile = ClientDetails(client_id=session['id'], address=form.address.data, contact=form.contact.data)
+            db.session.add(save_profile)
+            db.session.commit()
+            message = "Profile Completed !"
+            return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction)
     return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction)
 
 @app.route('/save', methods=['GET', 'POST'])

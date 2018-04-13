@@ -32,8 +32,15 @@ Admin Signup
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown">
-            <a href="/dashboard/client">Dashboard</a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Login <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/login/client">Client</a></li>
+              <li><a href="/login/dealer">Dealer</a></li>
 
+              <li role="separator" class="divider"></li>
+              <li><a href="/login/admin">Admin</a></li>
+
+            </ul>
           </li>
           <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><b>{{ username }}</b> <span class="caret"></span></a>
@@ -49,19 +56,26 @@ Admin Signup
       </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
   </nav>
-  <h2 style="text-align: center;padding-top: 3%;">Your Credentials</h2>
+  <h2 style="text-align: center;padding-top: 3%;">Dealer Edit Profile</h2>
   <div class="container"  style="padding-top: 5%;">
 
     <div class="row">
     <div class="col-lg-3 col-md-3"></div>
     <div class="col-lg-6 col-md-6">
-    <table class="table">
-         <tr> <td><b>Username:</b></td> <td>{{user.username}}</td></tr>
-         <tr> <td><b>Email:</b></td> <td>{{user.email}}</td></tr>
-         <tr><td><a href = "/dashboard/client/edit_profile" class="btn btn-default">Edit profile</a></td></tr>
-      </table>
-
-
+    <form method="POST" action="/dashboard/dealer/edit_profile">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_field(form.email) }}
+      {% if message == 'succesfully made request!' %}
+            <h5 style="color: green;">{{message}}</h5>
+          {% else %}
+            <h5 style="color: red;">{{ message }}</h5>
+          {% endif %}
+      
+      {{ wtf.form_field(form.username) }}
+      {{ wtf.form_field(form.password) }}
+      <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+  </div>
     <div class="col-lg-3 col-md-3"></div>
     </div>
   </div>

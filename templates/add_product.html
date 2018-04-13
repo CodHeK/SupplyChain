@@ -32,8 +32,8 @@ Dashboard
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-        <li><a href="/dashboard/notifications">Notifications</a></li>
+        <!-- <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="/notifications">Notifications</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
           <ul class="dropdown-menu">
@@ -44,8 +44,11 @@ Dashboard
             <li><a href="#">Separated link</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="#">One more separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="/change_password/dealer">Change Password</a></li>
+            <li><a href="/update_item">Update Item</a></li>
           </ul>
-        </li>
+        </li> -->
       </ul>
       <!-- <form class="navbar-form navbar-left">
         <div class="form-group">
@@ -55,13 +58,19 @@ Dashboard
       </form> -->
       <ul class="nav navbar-nav navbar-right">
         <li><a href="/add"><i class="fas fa-plus" style="color: white;"></i>&nbsp;&nbsp;ADD</a></li>
+        <li><a href="/dashboard/notifications">Notifications</a></li>
+        <li><a href="/dashboard/dealer">Dashboard</a></li>
+
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><b>{{ session_username }}</b> <span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a href="#">Settings</a></li>
-            <li><a href="#">Profile</a></li>
-            <li><a href="#">My products</a></li>
+            <li><a href="/dashboard/dealer/view_profile">Profile</a></li>
+            <li><a href="/my_products">My products</a></li>
             <li role="separator" class="divider"></li>
+            <li><a href="/update_item">Update Item</a></li>
+            <li><a href="/dashboard/dealer/edit_profile">Change credentials</a></li>
+              <li><a href="/change_password/dealer">Change Password</a></li>
             <li><a href="/logout">Logout</a></li>
           </ul>
         </li>

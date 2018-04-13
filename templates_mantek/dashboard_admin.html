@@ -9,9 +9,12 @@ Dashboard
 {{super()}}
 <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 <link rel="stylesheet" href="{{url_for('.static', filename='bootstrap.min.css')}}">
-<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
 <srcipt src="{{url_for('.static', filename='bootstrap.min.js')}}">
-<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+<style>
+  html, body {
+    font-family: 'Montserrat', sans-serif;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -26,13 +29,13 @@ Dashboard
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/">Gems</a>
+      <a class="navbar-brand" href="#">Brand</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <!-- <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
         <li><a href="#">Link</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
@@ -45,12 +48,12 @@ Dashboard
             <li role="separator" class="divider"></li>
             <li><a href="#">One more separated link</a></li>
             <li role="separator" class="divider"></li>
-
-
-
+            <li><a href="/change_password/admin">Change Password</a></li>
+            <li><a href="/print_inventory">Print Inventory</a></li>
+            <li><a href="/dashboard/admin/cancel_requests">Cancel Requests</a></li>
 
           </ul>
-        </li> -->
+        </li>
       </ul>
       <!-- <form class="navbar-form navbar-left">
         <div class="form-group">
@@ -64,11 +67,8 @@ Dashboard
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><b>{{ session_username }}</b> <span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a href="#">Settings</a></li>
-            <li><a href="/dashboard/admin/view_profile">Profile</a></li>
-            <li><a href="/dashboard/admin/cancel_requests">Cancel Requests</a></li>
-            <li><a href="/dashboard/admin/update_items">Update Item requests</a></li>
+            <li><a href="#">Profile</a></li>
             <li role="separator" class="divider"></li>
-            <li><a href="/change_password/admin">Change Password</a></li>
             <li><a href="/logout">Logout</a></li>
           </ul>
         </li>
@@ -76,31 +76,41 @@ Dashboard
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-<h2 style="text-align: center;padding-top: 3%;">Update Requests</h2>
+<h2 style="text-align: center;padding-top: 3%;">Order Report</h2>
 <div class="container"  style="padding-top: 5%;">
-  <div class="row">
-  <div class="col-lg-1 col-md-1"></div>
-    <div class="col-lg-10 col-md-10">
-      <br>
-
-        {% for product in products %}
-        <div class="jumbotron">
-          <h2>Product Name :&nbsp;{{ product.description }}</h2>
-          <h5>Product Quantity Available:&nbsp;{{product.quantity_avail}}</h5>
-          <h5><b>Price</b> : $&nbsp;{{ product.cost_each }}</h5>
-          <h3>Dealer ID:&nbsp;{{product.dealer_id}} &nbsp;Cost per Piece:$&nbsp;{{product.cost_each}}&nbsp;</h3>
-          <h3>Product Min Quantity:&nbsp;{{product.min_quantity}}</h3>
-          <table>
-          <tr>
-              <td style="width:85px;"><a href="/dashboard/admin/update_items/1/{{product.id}}" style="color:green;">Accept</a></td>
-              <td><a href="/dashboard/admin/update_items/0/{{product.id}}" style="color:red;">Decline</a></td>
-          </tr>
-          </table>
-        </div>
-        <br>
-        {% endfor %}
-    </div>
-    <div class="col-lg-1 col-md-1"></div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Quantity Ordered</th>
+          <th>Order ID</th>
+       </tr>
+      </thead>
+      </tbody>
+          {% for each_product in all_products %}
+            {% for order in orders %}
+              {% set val = 0 %}
+              {% for each_order in order %}
+                {% set val = val + 1 %}
+                {% if each_order.product_id == each_product.id %}
+                  <tr>
+                    {% if val == 1 %}
+                      <td>{{ each_product.description }}</td>
+                    {% else %}
+                      <td></td>
+                    {% endif %}
+                    <td>{{ each_order.quantity }}</td>
+                    <td><b>{{ each_order.id }}</b></td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+            <td><b>Quantity Left</b> : {{ each_product.quantity_avail }}</td>
+          {% endfor %}
+      </tbody>
+    </table>
+    <a href="/PrintReport" class="btn btn-default" style="text-align: right;">PRINT REPORT</a>
   </div>
+  <br><br>
 </div>
 {% endblock %}
