@@ -177,8 +177,9 @@ def login_client():
                     return redirect(url_for('dashboard_client'))
                 else:
                     return render_template('login_client.html', form=form, message="** Please verify your email!")
-        else:
             return render_template('login_client.html', form=form, message="** email or password for client doesn't seem right!")
+        else:
+            return render_template('login_client.html', form=form, message="** email doesn't seem right!")
     return render_template('login_client.html', form=form)
 
 @app.route('/login/dealer', methods=['GET', 'POST'])
@@ -196,8 +197,9 @@ def login_dealer():
                     return redirect(url_for('dashboard_dealer'))
                 else:
                     return render_template('login_dealer.html', form=form, message="** Please verify your email!")
+            return render_template('login_dealer.html', form=form, message="** email or password for client doesn't seem right!")
         else:
-            return render_template('login_dealer.html', form=form, message="** email or password for dealer doesn't seem right!")
+            return render_template('login_dealer.html', form=form, message="** email doesn't seem right!")
     return render_template('login_dealer.html', form=form)
 
 @app.route('/login/admin', methods=['GET', 'POST'])
@@ -215,8 +217,9 @@ def login_admin():
                     return redirect(url_for('dashboard_admin'))
                 else:
                     return render_template('login_admin.html', form=form, message="** Please verify your email!")
+            return render_template('login_admin.html', form=form, message="** email or password for client doesn't seem right!")
         else:
-            return render_template('login_admin.html', form=form, message="** email or password for admin doesn't seem right!")
+            return render_template('login_admin.html', form=form, message="** email doesn't seem right!")
     return render_template('login_admin.html', form=form)
 
 ###################################################
