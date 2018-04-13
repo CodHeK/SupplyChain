@@ -79,11 +79,8 @@ class Order(db.Model):
 class ClientDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer)
-#     city = db.Column(db.String(100))
     address = db.Column(db.String(1000))
-#     pincode = db.Column(db.String(100))
     contact = db.Column(db.String(100))
-#     state = db.Column(db.String(100))
 
 class CancelOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -151,11 +148,8 @@ class QuantityForm(FlaskForm):
     quantity = StringField('Quantity', validators=[InputRequired(), Length(min=0, max=100)])
 
 class ProfileForm(FlaskForm):
-    city = StringField('City', validators=[InputRequired(), Length(min=0, max=100)])
     address = StringField('Address', validators=[InputRequired(), Length(min=0, max=100)])
-    pincode = StringField('Pincode', validators=[InputRequired(), Length(min=0, max=100)])
     contact = StringField('Contact', validators=[InputRequired(), Length(min=0, max=100)])
-    state = StringField('State', validators=[InputRequired(), Length(min=0, max=100)])
 
 class TransactionForm(FlaskForm):
     card_num = StringField('Card Number', validators=[InputRequired(), Length(min=0, max=16)])
@@ -827,7 +821,7 @@ def confirmed_order(product_id):
             return render_template('product.html', form=form, message=message, product=product, session_username=session['username'])
 
     elif profileForm.validate_on_submit():
-        save_profile = ClientDetails(city=profileForm.city.data, client_id=session['id'], address=profileForm.address.data, pincode=profileForm.pincode.data, state=profileForm.state.data, contact=profileForm.contact.data)
+        save_profile = ClientDetails(client_id=session['id'], address=profileForm.address.data, contact=profileForm.contact.data)
         db.session.add(save_profile)
         db.session.commit()
         return render_template('product.html', form=form, product=product, session_username=session['username'], profileForm=profileForm)
@@ -870,7 +864,7 @@ def profile():
     form = ProfileForm()
     transaction = "complete"
     if form.validate_on_submit():
-        save_profile = ClientDetails(city=form.city.data, client_id=session['id'], address=form.address.data, pincode=form.pincode.data, state=form.state.data, contact=form.contact.data)
+        save_profile = ClientDetails(client_id=session['id'], address=form.address.data, contact=form.contact.data)
         db.session.add(save_profile)
         db.session.commit()
         return render_template('profile.html', profileForm=form, session_username=session['username'], transaction=transaction)
@@ -880,7 +874,7 @@ def profile():
 def save():
     form = ProfileForm()
     if form.validate_on_submit():
-        save_profile = ClientDetails(city=form.city.data, client_id=session['id'], address=form.address.data, pincode=form.pincode.data, state=form.state.data, contact=form.contact.data)
+        save_profile = ClientDetails(client_id=session['id'], address=form.address.data, contact=form.contact.data)
         db.session.add(save_profile)
         db.session.commit()
         return redirect(url_for('dashboard_client'))
