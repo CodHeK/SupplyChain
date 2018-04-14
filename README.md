@@ -13,6 +13,7 @@
 9. View Order History
 10. Request admin to edit client details
 11. Change Password
+12. Gets email on delivery
 ---
 ### Dealer features :
 ---
