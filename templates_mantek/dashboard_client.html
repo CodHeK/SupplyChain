@@ -97,7 +97,8 @@ Dashboard
         {% if quantity > 0 %}
           <div class="jumbotron">
             <h2>{{ product.description }}</h2>
-              {% if quantity < 3 %}
+              
+              {% if quantity < min_q %}
                 <h5>Only <b>{{ quantity }}</b> in Stock!</h5>
               {% else %}
                 <h5>In Stock</h5>

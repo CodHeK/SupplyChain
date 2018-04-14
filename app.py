@@ -857,6 +857,16 @@ def transaction_complete(transaction_id):
 
 @app.route('/dashboard/delivered/<int:order_id>', methods=['GET', 'POST'])
 def delivered(order_id):
+    get_order_detail = Order.query.filter_by(id=order_id).first()
+    get_that_product = Products.query.filter_by(id=get_order_detail.product_id).first()
+    get_that_client = User.query.filter_by(id=get_order_detail.client_id).first()
+    get_that_client_detail = ClientDetails.query.filter_by(client_id=get_order_detail.client_id).first()
+    email = get_that_client.email
+    email_subject = 'Order #' + str(get_order_detail.id) + ' delivered !'
+    email_body = 'Your product ' + get_that_product.description + ' Quantity : ' + str(get_order_detail.quantity) + ' was successfully delivered to your address : ' + get_that_client_detail.address + ' Thankyou for Ordering ! :)'
+    msg=Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
+    msg.body = email_body
+    mail.send(msg)
     remove_order = Order.query.filter_by(id=order_id).delete()
     db.session.commit()
     return redirect(url_for('dashboard_dealer'))
