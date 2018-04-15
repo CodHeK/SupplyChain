@@ -77,12 +77,11 @@ Dashboard
   {% for orders in my_orders %}
     <div class="jumbotron">
     {% for products in list_of_products %}
-
           {% if products[0].id == orders.product_id %}
             {% set each_cost = products[0].cost_each | int %}
             {% set quantity = orders.quantity | int %}
             {% set total = each_cost*quantity %}
-            <h2><b>Order #</b> {{ orders.id }}</h2>
+            <h2><b>Order #</b> {{ orders.id }}</h2>&nbsp;&nbsp;{% if orders.cancel == "1" %}<p style="color: red;">Cancel request placed!</p>{% endif %}
             <hr>
             <h4><b>{{ products[0].description }}</b> - <span style="font-size: 26px;">$&nbsp;{{ products[0].cost_each }}</span></h4>
             <h4><b>Quantity</b> :&nbsp;{{ orders.quantity }}</h4>

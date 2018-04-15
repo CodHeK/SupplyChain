@@ -76,6 +76,7 @@ class Order(db.Model):
     product_id = db.Column(db.Integer)
     dealer_id = db.Column(db.Integer)
     quantity = db.Column(db.String(100))
+    cancel = db.Column(db.String(100))
 
 class ClientDetails(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -813,7 +814,7 @@ def confirmed_order(product_id):
         if int(quantity_ordered) <= int(product.quantity_avail):
             if int(quantity_ordered) > 0:
 
-                new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered)
+                new_order = Order(client_id=client_id, product_id=product_id, dealer_id=dealer_id, quantity=quantity_ordered,cancel="0")
                 #hashed_id = generate_password_hash(new_order.id, method='sha256')
                 #new_order.hashed_id=hashed_id
                 db.session.add(new_order)
@@ -932,8 +933,10 @@ def confirm_cancel(order_id):
     if curr.client_id==session['id']:
         newcan=CancelOrder(order_id=order_id)
         oldcan=CancelOrder.query.filter_by(order_id=order_id).first()
+        order_to_cancel = Order.query.filter_by(id=order_id).first()
+        order_to_cancel.cancel = "1"
+        db.session.commit()
         if oldcan:
-            #return '<h1>{}</h1>'.format(oldcan.order_id)
             return redirect(url_for('history'))
         db.session.add(newcan)
         db.session.commit()
