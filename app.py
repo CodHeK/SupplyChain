@@ -943,6 +943,15 @@ def confirm_cancel(order_id):
 
     return redirect(url_for('history'))
 
+@app.route('/cancel_history', methods=['GET', 'POST'])
+def cancel_history():
+    all_cancelled = Order.query.filter_by(client_id=session['id'])
+    list_of_products = []
+    for each_order in all_cancelled:
+        product_data = Products.query.filter_by(id=each_order.product_id)
+        list_of_products.append(product_data)
+    return render_template('cancel_history.html', session_username=session['username'], all_cancelled=all_cancelled, list_of_products=list_of_products)
+
 
 @app.route('/dashboard/admin/cancel_requests', methods=['GET', 'POST'])
 def cancel_requests():
@@ -957,12 +966,12 @@ def can_req(bit,id):
         db.session.commit()
 
         orders = Order.query.filter_by(id=req.order_id).first()
-        db.session.delete(orders)
-        db.session.commit()
+        # db.session.delete(orders)
+        # db.session.commit()
 
         trans = Transactions.query.filter_by(order_id=req.order_id).first()
-        db.session.delete(trans)
-        db.session.commit()
+        # db.session.delete(trans)
+        # db.session.commit()
 
         prod = Products.query.filter_by(id=orders.product_id).first()
         d = int(prod.quantity_avail)

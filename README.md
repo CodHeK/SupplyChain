@@ -15,6 +15,7 @@
 11. Change Password
 12. Gets email on delivery
 13. Gets email if order cancelled or not
+14. Can view all cancelled orders
 ---
 ### Dealer features :
 ---
