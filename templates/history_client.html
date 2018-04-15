@@ -89,7 +89,7 @@ Dashboard
               <h4><b>Quantity</b> :&nbsp;{{ orders.quantity }}</h4>
               <br>
               <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
-              {% if orders.cancel != "-1" %}
+              {% if orders.cancel == "0" %}
                 <a href = '/cancel_order/{{orders.id}}' class="btn btn-default">Cancel Order</a>
               {% endif %}
               {% break %}

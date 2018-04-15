@@ -12,7 +12,7 @@ from itsdangerous import URLSafeTimedSerializer,SignatureExpired,BadTimeSignatur
 import sqlite3 as sql
 import hashlib
 import pdfkit
-import datetime
+import datetime, time, random
 
 
 app = Flask(__name__)
@@ -824,9 +824,12 @@ def confirmed_order(product_id):
                 product.quantity_avail = str(new_quantity)
                 db.session.commit()
                 order_id = new_order.id
-                string_order_id = str(order_id).strip()
+                timestamp = time.time()
+                string_order_id = str(timestamp).strip()
+                l = random.randint(1,20)
+                r = random.randint(21,45)
                 transaction_id = hashlib.sha224(string_order_id.encode()).hexdigest()
-                transaction_id = transaction_id[1:8]
+                transaction_id = transaction_id[l:r]
                 new_transaction = Transactions(order_id=order_id, client_id=client_id, transaction_id=transaction_id)
                 db.session.add(new_transaction)
                 db.session.commit()
