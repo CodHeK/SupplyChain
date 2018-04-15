@@ -63,6 +63,7 @@ Dashboard
             <li><a href="#">Settings</a></li>
             <li><a href="/profile">Edit profile</a></li>
             <li><a href="/history">My Orders</a></li>
+            <li><a href="/cancel_history">Cancel History</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="/change_password/client">Change Password</a></li>
             <li><a href="/logout">Logout</a></li>
@@ -75,25 +76,27 @@ Dashboard
 <h2 style="text-align: center;padding-top: 3%;">My Order History</h2>
 <div class="container"  style="padding-top: 5%;">
   {% for orders in my_orders %}
-    <div class="jumbotron">
-    {% for products in list_of_products %}
-          {% if products[0].id == orders.product_id %}
-            {% set each_cost = products[0].cost_each | int %}
-            {% set quantity = orders.quantity | int %}
-            {% set total = each_cost*quantity %}
-            <h2><b>Order #</b> {{ orders.id }}</h2>&nbsp;&nbsp;{% if orders.cancel == "1" %}<p style="color: red;">Cancel request placed!</p>{% endif %}
-            <hr>
-            <h4><b>{{ products[0].description }}</b> - <span style="font-size: 26px;">$&nbsp;{{ products[0].cost_each }}</span></h4>
-            <h4><b>Quantity</b> :&nbsp;{{ orders.quantity }}</h4>
-            <br>
-            <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
-            <a href = '/cancel_order/{{orders.id}}' class="btn btn-default">Cancel Order</a>
-            {% break %}
-        {% endif %}
+    {% if orders.cancel == "0" or orders.cancel == "1" %}
+      <div class="jumbotron">
+      {% for products in list_of_products %}
+            {% if products[0].id == orders.product_id %}
+              {% set each_cost = products[0].cost_each | int %}
+              {% set quantity = orders.quantity | int %}
+              {% set total = each_cost*quantity %}
+              <h2><b>Order #</b> {{ orders.id }}</h2>&nbsp;&nbsp;{% if orders.cancel == "1" %}<p style="color: red;">Cancel request placed!</p>{% endif %}
+              <hr>
+              <h4><b>{{ products[0].description }}</b> - <span style="font-size: 26px;">$&nbsp;{{ products[0].cost_each }}</span></h4>
+              <h4><b>Quantity</b> :&nbsp;{{ orders.quantity }}</h4>
+              <br>
+              <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
+              <a href = '/cancel_order/{{orders.id}}' class="btn btn-default">Cancel Order</a>
+              {% break %}
+          {% endif %}
 
-    {% endfor %}
-  </div>
-  <br>
+      {% endfor %}
+    </div>
+    <br>
+    {% endif %}
   {% endfor %}
 </div>
 {% endblock %}

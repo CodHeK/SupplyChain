@@ -966,8 +966,9 @@ def can_req(bit,id):
         db.session.commit()
 
         orders = Order.query.filter_by(id=req.order_id).first()
+        orders.cancel = "2"
         # db.session.delete(orders)
-        # db.session.commit()
+        db.session.commit()
 
         trans = Transactions.query.filter_by(order_id=req.order_id).first()
         # db.session.delete(trans)

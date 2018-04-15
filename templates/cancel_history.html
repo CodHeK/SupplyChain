@@ -75,7 +75,7 @@ Dashboard
 <h2 style="text-align: center;padding-top: 3%;">Orders Cancelled</h2>
 <div class="container"  style="padding-top: 5%;">
   {% for orders in all_cancelled %}
-    {% if orders.cancel == "1" %}
+    {% if orders.cancel == "2" %}
       <div class="jumbotron">
       {% for products in list_of_products %}
             {% if products[0].id == orders.product_id %}
