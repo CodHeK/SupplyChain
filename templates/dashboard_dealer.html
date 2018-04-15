@@ -96,7 +96,13 @@ Dashboard
                   <br>
                   <h3><b>TOTAL ORDER COST</b> : &nbsp;$ {{ total }}</h3>
                   <hr>
-                  <a href="/dashboard/delivered/{{order.id}}" class="btn btn-default">DELIVERED</a>
+                  {% if order.cancel == "2" %}
+                    <p style="color: red;">Cancelled</p>
+                  {% elif order.cancel == "-1" %}
+                    <p style="color: green;">Delivered</p>
+                  {% else %}
+                    <a href="/dashboard/delivered/{{order.id}}" class="btn btn-default">DELIVERED</a>
+                  {% endif %}
                   {% break %}
                {% endif %}
             {% endfor %}
@@ -115,9 +121,6 @@ Dashboard
               {% for client_data in clients_data %}
                 {% if order.client_id == client_data[0].client_id %}
                   <h4><b>Address </b> : &nbsp;{{ client_data[0].address }}</h4>
-                  <h4><b>City </b> : &nbsp;{{ client_data[0].city }}</h4>
-                  <h4><b>State </b> : &nbsp;{{ client_data[0].state }}</h4>
-                  <h4><b>Pincode </b> : &nbsp;{{ client_data[0].pincode }}</h4>
                   <hr>
                   <h4><b>Contact </b> : &nbsp;{{ client_data[0].contact }}</h4>
                   {% break %}

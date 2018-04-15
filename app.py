@@ -859,6 +859,8 @@ def transaction_complete(transaction_id):
 @app.route('/dashboard/delivered/<int:order_id>', methods=['GET', 'POST'])
 def delivered(order_id):
     get_order_detail = Order.query.filter_by(id=order_id).first()
+    get_order_detail.cancel = "-1"
+    db.session.commit()
     get_that_product = Products.query.filter_by(id=get_order_detail.product_id).first()
     get_that_client = User.query.filter_by(id=get_order_detail.client_id).first()
     get_that_client_detail = ClientDetails.query.filter_by(client_id=get_order_detail.client_id).first()
@@ -870,8 +872,8 @@ def delivered(order_id):
     msg = Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
     msg.body = email_body
     mail.send(msg)
-    remove_order = Order.query.filter_by(id=order_id).delete()
-    db.session.commit()
+    # remove_order = Order.query.filter_by(id=order_id).delete()
+    # db.session.commit()
     return redirect(url_for('dashboard_dealer'))
 
 @app.route('/dashboard/notifications', methods=['GET', 'POST'])
