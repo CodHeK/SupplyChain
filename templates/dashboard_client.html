@@ -93,7 +93,7 @@ Dashboard
           </div>
       </div>
       <br>
-      {% if message == '1' %}
+      {% if length != "0" %}
         {% for product in products %}
         {% set quantity = product.quantity_avail | int %}
         {% set min_q = product.min_quantity | int %}
@@ -112,7 +112,7 @@ Dashboard
         {% endif %}
         <br>
         {% endfor %}
-      {% elif message == '0' %}
+      {% else %}
         <div class="jumbotron">
           <h2>No such product found :(</h2>
         </div>

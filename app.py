@@ -342,15 +342,14 @@ def dashboard_client():
         if form.validate_on_submit():
             searchVal = form.search.data
             products_on_search = Products.query.filter_by(description=searchVal)
+            length = products_on_search.count()
+            length = str(length)
             if products_on_search:
-                message = "1"
-                return render_template('dashboard_client.html',session_username=session_username, products=products_on_search, form=form, message=message)
+                return render_template('dashboard_client.html',session_username=session_username, products=products_on_search, form=form, length=length)
             else:
-                message = "0"
-                return render_template('dashboard_client.html',session_username=session_username, products=products_on_search, form=form, message=message)
+                return render_template('dashboard_client.html',session_username=session_username, form=form, length=length)
         else:
-            message = "1"
-            return render_template('dashboard_client.html',session_username=session_username, products=products, form=form, message=message)
+            return render_template('dashboard_client.html',session_username=session_username, products=products, form=form)
     else:
         session_type = session['type']
         return render_template('not_logged_in.html',session_type=session_type)
@@ -867,7 +866,7 @@ def delivered(order_id):
     date_of_delivery = now.strftime('%B %d, %Y')
     email_subject = 'Order #' + str(get_order_detail.id) + ' delivered !'
     email_body = 'Your product ' + get_that_product.description + ' Quantity : ' + str(get_order_detail.quantity) + ' was successfully delivered to your address : ' + get_that_client_detail.address + ' on ' + date_of_delivery + ' Thankyou for Ordering ! :)'
-    msg=Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
+    msg = Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
     msg.body = email_body
     mail.send(msg)
     remove_order = Order.query.filter_by(id=order_id).delete()
@@ -953,22 +952,50 @@ def can_req(bit,id):
         req = CancelOrder.query.filter_by(id=id).first()
         db.session.delete(req)
         db.session.commit()
+
         orders = Order.query.filter_by(id=req.order_id).first()
         db.session.delete(orders)
         db.session.commit()
+
         trans = Transactions.query.filter_by(order_id=req.order_id).first()
         db.session.delete(trans)
         db.session.commit()
-        prod_id = orders.product_id
-        prod = Products.query.filter_by(id=prod_id).first()
+
+        prod = Products.query.filter_by(id=orders.product_id).first()
         d = int(prod.quantity_avail)
         d += int(orders.quantity)
         prod.quantity_avail = str(d)
         db.session.commit()
+
+        get_that_client = User.query.filter_by(id=orders.client_id).first()
+
+        email = get_that_client.email
+        now = datetime.datetime.now()
+        date_of_delivery = now.strftime('%B %d, %Y')
+        email_subject = 'Order #' + str(orders.id) + ' Cancelled !'
+        email_body = 'Your request to Cancel order for ' + prod.description + ' Quantity : ' + orders.quantity + ' was accepted by the admin on ' + date_of_delivery + ' Thankyou ! :)'
+        msg = Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
+        msg.body = email_body
+        mail.send(msg)
     else:
-        req=CancelOrder.query.filter_by(id=id).first()
+        req = CancelOrder.query.filter_by(id=id).first()
         db.session.delete(req)
         db.session.commit()
+
+        orders = Order.query.filter_by(id=req.order_id).first()
+
+        prod = Products.query.filter_by(id=orders.product_id).first()
+
+        get_that_client = User.query.filter_by(id=orders.client_id).first()
+
+        email = get_that_client.email
+        now = datetime.datetime.now()
+        date_of_delivery = now.strftime('%B %d, %Y')
+        email_subject = 'Order #' + str(orders.id) + ' not Cancelled !'
+        email_body = 'Your request to Cancel order for ' + prod.description + ' Quantity : ' + orders.quantity + ' was declined by the admin on ' + date_of_delivery + ' Thankyou ! :)'
+        msg = Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
+        msg.body = email_body
+        mail.send(msg)
     return redirect(url_for('cancel_requests'))
 
 @app.route('/PrintReport')

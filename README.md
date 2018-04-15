@@ -14,6 +14,7 @@
 10. Request admin to edit client details
 11. Change Password
 12. Gets email on delivery
+13. Gets email if order cancelled or not
 ---
 ### Dealer features :
 ---
