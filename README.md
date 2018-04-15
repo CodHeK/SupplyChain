@@ -16,6 +16,7 @@
 12. Gets email on delivery
 13. Gets email if order cancelled or not
 14. Can view all cancelled orders
+15. Can view delivered items
 ---
 ### Dealer features :
 ---
