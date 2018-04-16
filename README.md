@@ -12,7 +12,7 @@
 8. Payment details
 9. View Order History
 10. Request admin to edit client details
-11. Change Password
+11. Forgot/Change Password
 12. Gets email on delivery
 13. Gets email if order cancelled or not
 14. Can view all cancelled orders
@@ -27,7 +27,7 @@
 5. Request admin to edit item information
 6. Request admin to edit dealer details
 7. Get notification of items falling short of quantity
-8. Change Password
+8. Forgot/Change Password
 ---
 ### Admin features :
 ---
@@ -37,4 +37,4 @@
 4. Accept/Decline profile edit requests
 5. Accept/Decline item info edit requests
 6. Get Inventory Report
-7. Change Password
+7. Forgot/Change Password
