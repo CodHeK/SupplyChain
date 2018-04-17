@@ -863,7 +863,7 @@ def transaction_complete(transaction_id):
         now = datetime.datetime.now()
         date_of_delivery = now.strftime('%B %d, %Y')
         email_subject = client_name + ', Your order ' + transaction_id + ' is confirmed!'
-        email_body = 'Thank You ' + client_name + ' Your order transaction number is #' + transaction_id + ' was confirmed on ' + date_of_delivery + '. Your product ' + get_that_product.description + ' Quantity: ' + order.quantity + ' to ADDRESS: ' + get_the_clientData.address + ' CONTACT: ' + get_the_clientData.contact
+        email_body = 'Thank You ' + client_name + '! Your order transaction number is #' + transaction_id + ' was confirmed on ' + date_of_delivery + '. Your product ' + get_that_product.description + ' Quantity: ' + order.quantity + ' to ADDRESS: ' + get_the_clientData.address + ' CONTACT: ' + get_the_clientData.contact
         msg = Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
         msg.body = email_body
         mail.send(msg)
