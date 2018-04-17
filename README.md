@@ -1,4 +1,5 @@
-# SupplyChain
+# Supply Chain Management
+#### DBMS mini project
 ---
 ### Client features :
 ---
