@@ -853,6 +853,20 @@ def confirmed_order(product_id):
 def transaction_complete(transaction_id):
     transaction_id_exists = Transactions.query.filter_by(transaction_id=transaction_id).first()
     if transaction_id_exists:
+        get_that_order_id = transaction_id_exists.order_id
+        order = Order.query.filter_by(id=get_that_order_id).first()
+        get_that_product = Products.query.filter_by(id=order.product_id).first()
+        get_that_client = User.query.filter_by(id=order.client_id).first()
+        get_the_clientData = ClientDetails.query.filter_by(client_id=get_that_client.id).first()
+        client_name = get_that_client.username
+        email = get_that_client.email
+        now = datetime.datetime.now()
+        date_of_delivery = now.strftime('%B %d, %Y')
+        email_subject = client_name + ', Your order ' + transaction_id + ' is confirmed!'
+        email_body = 'Thank You ' + client_name + ' Your order transaction number is #' + transaction_id + ' was confirmed on ' + date_of_delivery + '. Your product ' + get_that_product.description + ' Quantity: ' + order.quantity + ' to ADDRESS: ' + get_the_clientData.address + ' CONTACT: ' + get_the_clientData.contact
+        msg = Message(email_subject,sender='iit2016007@iiita.ac.in',recipients=[email])
+        msg.body = email_body
+        mail.send(msg)
         message = "Order placed Successfully!"
         return render_template('thankyou_for_ordering.html', message=message, session_username=session['username'], transaction_id=transaction_id)
     else:
