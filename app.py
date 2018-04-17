@@ -1030,20 +1030,14 @@ def can_req(bit,id):
         mail.send(msg)
     return redirect(url_for('cancel_requests'))
 
-@app.route('/PrintReport')
+@app.route('/PrintReport', methods=['GET', 'POST'])
 def print_pdf():
-    # all_products = Products.query.all()
-    # orders = []
-    # for each_product in all_products:
-    #     all_orders_for_this_product = Order.query.filter_by(product_id=each_product.id)
-    #     orders.append(all_orders_for_this_product)
-    # rendered = render_template('dashboard_admin.html', session_username=session['username'], orders=orders, all_products=all_products)
-    # pdf = pdfkit.from_string(rendered, False)
-    # response = make_response(pdf)
-    # response.headers['Content-Type'] = 'application/pdf'
-    # response.headers['Content-Disposition'] = 'inline; filename=report.pdf'
-    # return response
-    pdfkit.from_url('http://localhost:5000/dashboard/admin', 'report.pdf')
+    all_products = Products.query.all()
+    orders = []
+    for each_product in all_products:
+        all_orders_for_this_product = Order.query.filter_by(product_id=each_product.id)
+        orders.append(all_orders_for_this_product)
+    return render_template('report.html', session_username=session['username'], all_products=all_products, orders=orders)
 
 
 @app.route('/logout')

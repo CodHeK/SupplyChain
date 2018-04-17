@@ -80,11 +80,9 @@ Dashboard
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-<!-- <h2 style="text-align: center;padding-top: 3%;">Order Report</h2> -->
+<h2 style="text-align: center;padding-top: 3%;">Order Report</h2>
 <div class="container"  style="padding-top: 5%;text-align: center;">
-    <h1 style="padding-top: 3%;font-size: 80px;">Welcome, {{ session_username }} !</h1>
-    <h4 style="padding-top: 2%;font-size: 35px;">Click below to print report </h4>
-    <!-- <table class="table">
+    <table class="table">
       <thead>
         <tr>
           <th>Product</th>
@@ -114,8 +112,7 @@ Dashboard
             <td><b>Quantity Left</b> : {{ each_product.quantity_avail }}</td>
           {% endfor %}
       </tbody>
-    </table> -->
-    <a href="/PrintReport" class="btn btn-default" style="text-align: right;margin-top: 4%;" target="_blank">PRINT REPORT</a>
+    </table>
   </div>
   <br><br>
 </div>
